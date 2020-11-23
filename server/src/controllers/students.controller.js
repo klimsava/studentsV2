@@ -18,7 +18,7 @@ exports.createNewStudent = (req, res) => {
   const studentReqData = new studentsModel(req.body);
   studentsModel.checkStudentExist(studentReqData, (err, student) => {
     if (student) {
-      res.send({status: false, message: 'The student already exists!'})
+      res.status(422).json({status: false, message: 'The student already exists!'})
     } else {
       studentsModel.createStudent(studentReqData, (err, student) => {
         if (err) {
@@ -40,7 +40,7 @@ exports.updateStudents = (req, res) => {
   const studentReqData = new studentsModel(req.body);
   studentsModel.checkStudentExist(studentReqData, (err, student) => {
     if (student) {
-      res.send({status: false, message: "Student exists!"})
+      res.status(422).json({status: false, message: "Student exists!"});
     } else {
       console.log('Students update', studentReqData);
       studentsModel.updateStudents(req.params.id, studentReqData, (err, student) => {
@@ -61,5 +61,24 @@ exports.deleteStudent = (req, res) => {
       success: true,
       message: 'Student deleted successfully',
     });
+  });
+};
+
+exports.selectedCourse = (req, res) => {
+  studentsModel.checkSelectedCourse(req.body, (err, selectedCourse) => {
+    console.log(req.body);
+    if (selectedCourse) {
+      res.status(422).json({status: false, message: 'You are already enrolled in the course at this time!'})
+    } else {
+      studentsModel.selectCourse(req.body, (err, student) => {
+        if (err) {
+          res.send(err);
+        }
+        res.status(200).json({
+          status: true,
+          message: 'The course was successfully selected!',
+        });
+      });
+    }
   });
 };

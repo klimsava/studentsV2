@@ -80,4 +80,73 @@ Students.deleteStudent = (id, result) => {
   );
 };
 
+//Select course
+Students.selectCourse = (selectCourseData, result) => {
+  dbConnect.query('INSERT INTO student_courses (student_id, course_id) VALUES ?',
+    [getCorrectResult(getResultClient(selectCourseData))],
+    (err, res) => {
+      if (err) {
+        console.log('', err);
+        result(null, err);
+      }
+      console.log('Result student', res);
+
+      result(null, res);
+    })
+};
+
+Students.checkSelectedCourse = (selectCourseData, result) => {
+  dbConnect.query('SELECT student_id, course_id FROM student_courses WHERE student_id=?;',
+    [selectCourseData.studentId],
+    (err, res) => {
+      if (err) {
+        console.log('', err);
+        result(null, err);
+      }
+      let resultFromDB = res.map(item => {
+        return {studentId: item.student_id, course_id: item.course_id};
+      });
+
+      result(null, checkingSameRecord(resultFromDB, getResultClient(selectCourseData)).length);
+    });
+};
+
+function checkingSameRecord(resultDB, resultClient) {
+  let result = [];
+
+  resultDB.forEach(function (elementOfSomeArray) {
+    resultClient.forEach(function (elementOfOtherArray) {
+      if (JSON.stringify(elementOfSomeArray) === JSON.stringify(elementOfOtherArray)) {
+        result.push(elementOfOtherArray);
+      }
+    });
+  });
+
+  return result;
+}
+
+function getResultClient(data) {
+  let resultClient = [];
+
+  if (data.courseId.length > 1) {
+    data.courseId.forEach(courseId => {
+      resultClient.push({studentId: +data.studentId, course_id: +courseId});
+    });
+  } else {
+    resultClient.push({studentId: +data.studentId, course_id: +data.courseId})
+  }
+
+  return resultClient;
+}
+
+function getCorrectResult(arr) {
+  return arr.reduce((index, item) => {
+    let array = [];
+    array.push(item.studentId);
+    array.push(item.course_id);
+    index.push(array);
+    return index;
+  }, [])
+}
+
 module.exports = Students;

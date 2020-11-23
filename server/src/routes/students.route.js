@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const studentsController = require('../controllers/students.controller');
-const {validatorsId, checkValidationResult, studentsValidators} = require('../validators/validatorsParams');
+const {validatorsSelectedCourses, validatorsId, checkValidationResult, studentsValidators} = require('../validators/validatorsParams');
 
 //get all students
 router.get('/', studentsController.getStudentsList);
@@ -15,5 +15,8 @@ router.put('/:id', studentsValidators, validatorsId, checkValidationResult, stud
 
 //delete student
 router.delete('/:id', validatorsId, checkValidationResult, studentsController.deleteStudent);
+
+//chosen course
+router.post('/chosen-course', validatorsSelectedCourses, checkValidationResult, studentsController.selectedCourse);
 
 module.exports = router;

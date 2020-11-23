@@ -14,6 +14,6 @@ router.post('/', coursesValidators, checkValidationResult, coursesController.cre
 router.put('/:id', coursesValidators, validatorsId, checkValidationResult, coursesController.updateCourse);
 
 //delete course
-router.delete('/:id',validatorsId, checkValidationResult, coursesController.deleteCourse);
+router.delete('/:id', validatorsId, checkValidationResult, coursesController.deleteCourse);
 
 module.exports = router;

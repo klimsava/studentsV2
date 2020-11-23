@@ -21,6 +21,10 @@ const coursesRoutes = require('./src/routes/courses.route');
 app.use('/api/students', studentsRoutes);
 app.use('/api/courses', coursesRoutes);
 
+app.use(function (req, res, next) {
+  res.status(404).json({title: "Sorry, page not found"});
+});
+
 app.listen(port, () => {
   console.log(`Express Server is running at port ${port}`);
 });

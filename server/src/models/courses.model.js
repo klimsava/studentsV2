@@ -70,10 +70,10 @@ Courses.deleteCourse = (id, result) => {
     "DELETE FROM courses WHERE id=?",
     [id],
     (err, res) => {
-     if (err) {
-       console.log('Error while deleting course.');
-       result(null, err);
-     }
+      if (err) {
+        console.log('Error while deleting course.');
+        result(null, err);
+      }
 
       console.log('Course deleted successfully');
       result(null, res);
