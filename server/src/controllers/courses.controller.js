@@ -5,7 +5,7 @@ exports.getCoursesList = (req, res) => {
   coursesModel.getAllCourses((err, courses) => {
     console.log('We are here');
     if (err) {
-      res.send(400, err);
+      res.send(422, err);
     }
 
     console.log('Course', courses);
@@ -19,7 +19,7 @@ exports.createNewCourse = (req, res) => {
   const courseReqData = new coursesModel(req.body);
   coursesModel.checkCourseExist(courseReqData, (err, course) => {
     if (course) {
-      res.send({status: false, message: 'Course exists!'})
+      res.status(422).json({status: false, message: 'Course exists!'})
     } else {
       console.log('Valid data');
       coursesModel.createCourse(courseReqData, (err, course) => {
@@ -42,7 +42,7 @@ exports.updateCourse = (req, res) => {
   const courseReqData = new coursesModel(req.body);
   coursesModel.checkCourseExist(courseReqData, (err, course) => {
     if (course) {
-      res.send({status: false, message: 'Course exists!'})
+      res.status(422).json({status: false, message: 'Course exists!'})
     } else {
       console.log('Course update', courseReqData);
       coursesModel.updateCourse(req.params.id, courseReqData, (err, course) => {

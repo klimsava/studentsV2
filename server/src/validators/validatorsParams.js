@@ -20,14 +20,14 @@ exports.studentsValidators = [
     .not()
     .isEmpty()
     .withMessage('First name is required!')
-    .isLength({min:3, max:20})
+    .isLength({min: 3, max: 20})
     .withMessage('First name must be 3 to 20 characters long!'),
   check('last_name')
     .trim()
     .not()
     .isEmpty()
     .withMessage('Last name is required!')
-    .isLength({min:3, max:30})
+    .isLength({min: 3, max: 30})
     .withMessage('Last name must be 3 to 30 characters long!'),
   check('age')
     .trim()
@@ -36,7 +36,7 @@ exports.studentsValidators = [
     .withMessage('Age is required!')
     .isNumeric()
     .withMessage('Age is number!')
-    .isLength({min:1, max:2})
+    .isLength({min: 1, max: 2})
     .withMessage('Age must be 1 to 2 characters long!'),
 ];
 
@@ -56,14 +56,14 @@ exports.coursesValidators = [
     .not()
     .isEmpty()
     .withMessage('Course name is required!')
-    .isLength({min:3, max:20})
+    .isLength({min: 3, max: 20})
     .withMessage('Course name must be 3 to 20 characters long!'),
   check('description')
     .trim()
     .not()
     .isEmpty()
     .withMessage('Description is required!')
-    .isLength({min:10, max:1000})
+    .isLength({min: 10, max: 1000})
     .withMessage('Description must be 10 to 1000 characters long!'),
   check('time')
     .exists()
@@ -72,4 +72,19 @@ exports.coursesValidators = [
     .withMessage('Time select is required!')
     .matches(/^[\d+]{2}:[\d+]{2}$/)
     .withMessage('Time format hh:mm'),
+];
+
+exports.validatorsSelectedCourses = [
+  check('studentId')
+    .exists()
+    .not()
+    .isEmpty()
+    .isNumeric()
+    .withMessage('Checkbox select is required!'),
+  check('courseId')
+    .exists()
+    .not()
+    .isEmpty()
+    .isNumeric()
+    .withMessage('Checkbox select is required!'),
 ];
