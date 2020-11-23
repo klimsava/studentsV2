@@ -13,6 +13,6 @@ export default function (instance) {
     },
     changeCourse(payload, id) {
       return instance.put(`api/courses/${id}`, qs.stringify(payload));
-    }
+    },
   }
 }

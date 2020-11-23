@@ -118,7 +118,8 @@ export default {
           this.responseStatusCode = res.data.status;
           this.responseMsg = res.data.message;
         } catch (err) {
-          console.log(err);
+          this.responseStatusCode = err.response.data.status;
+          this.responseMsg = err.response.data.message;
         }
 
         if (this.responseStatusCode) {

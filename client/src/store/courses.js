@@ -16,9 +16,6 @@ export default {
   state: {
     courses: [],
     students: [],
-    studentId: null,
-    serverStatusCode: null,
-    serverMsg: null,
   },
   getters: {
     getCourses(state) {

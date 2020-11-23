@@ -18,13 +18,19 @@
             </h4>
 
             <span class="box-students__age">Age: {{ student.age }}</span>
-            <div v-if="student.courses" class="box-students__courses">
-              <span>Your course: </span>
-              {{ student.courses }}
+            <div v-if="student.name" class="box-students__courses">
+              <div>
+                <span>Your course: </span>
+                {{ student.name }}
+              </div>
+              <div>
+                <span>Time course: </span>
+                {{ student.time }}
+              </div>
             </div>
           </li>
           <div class="box-students__btns">
-            <a class="waves-effect waves-light btn">Chosen course</a>
+            <a class="waves-effect waves-light btn" @click="$router.push({name: 'ChosenCourse', params: {profile_id: student.id}})">Chosen course</a>
             <a class="waves-effect waves-light btn" @click="$router.push({name: 'EditStudent', params: {profile_id: student.id}})">Edit</a>
             <a class="waves-effect waves-light btn" @click="removeStudent(student.id)">Delete</a>
           </div>

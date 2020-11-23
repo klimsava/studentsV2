@@ -4,11 +4,11 @@
 
     <div v-if="submitted">
       <div v-if="responseStatusCode" class="materialert success">
-        {{this.responseMsg}}
+        {{ this.responseMsg }}
       </div>
 
       <div v-else class="materialert error">
-        {{this.responseMsg}}
+        {{ this.responseMsg }}
       </div>
     </div>
 
@@ -28,8 +28,10 @@
                 :class="$v.form.first_name.$error ? 'invalid-feedback' : ''"
             >
             <label for="student_firstName">First name student</label>
-            <p v-if="$v.form.first_name.$dirty && !$v.form.first_name.required" class="invalid-feedback">Invalid student firstName!</p>
-            <p v-if="$v.form.first_name.$dirty && !$v.form.first_name.minLength" class="invalid-feedback">Enter a long firstName!</p>
+            <p v-if="$v.form.first_name.$dirty && !$v.form.first_name.required" class="invalid-feedback">Invalid student
+              firstName!</p>
+            <p v-if="$v.form.first_name.$dirty && !$v.form.first_name.minLength" class="invalid-feedback">Enter a long
+              firstName!</p>
           </div>
         </div>
         <div class="row">
@@ -43,8 +45,10 @@
                 :class="$v.form.last_name.$error ? 'invalid-feedback' : ''"
             >
             <label for="student_lastName">Last name student</label>
-            <p v-if="$v.form.last_name.$dirty && !$v.form.last_name.required" class="invalid-feedback">Invalid student lastName!</p>
-            <p v-if="$v.form.last_name.$dirty && !$v.form.last_name.minLength" class="invalid-feedback">Enter a long lastName!</p>
+            <p v-if="$v.form.last_name.$dirty && !$v.form.last_name.required" class="invalid-feedback">Invalid student
+              lastName!</p>
+            <p v-if="$v.form.last_name.$dirty && !$v.form.last_name.minLength" class="invalid-feedback">Enter a long
+              lastName!</p>
           </div>
         </div>
         <div class="row">
@@ -55,7 +59,8 @@
                 v-for="age in 85"
                 :key="age"
                 :class="$v.form.age.$error ? 'invalid-feedback' : ''"
-            >{{age}}</option>
+            >{{ age }}
+            </option>
           </select>
           <p v-if="$v.form.age.$dirty && !$v.form.age.required" class="invalid-feedback">Age is not selected!</p>
         </div>
@@ -68,8 +73,8 @@
 </template>
 
 <script>
-import { validationMixin } from 'vuelidate'
-import { required, minLength } from 'vuelidate/lib/validators'
+import {validationMixin} from 'vuelidate'
+import {required, minLength} from 'vuelidate/lib/validators'
 import instance from '../api/instance';
 import studentsModule from '../api/students';
 
@@ -90,7 +95,7 @@ export default {
   },
   validations: {
     form: {
-      first_name: { required, minLength: minLength(3)},
+      first_name: {required, minLength: minLength(3)},
       last_name: {required, minLength: minLength(3)},
       age: {required},
     }
@@ -102,7 +107,7 @@ export default {
       if (!this.$v.form.$error) {
         this.submitted = true;
         const {...form} = this.form;
-        try{
+        try {
           let res = await studentsModule(instance).addStudent({
             first_name: form.first_name,
             last_name: form.last_name,
@@ -111,7 +116,8 @@ export default {
           this.responseStatusCode = res.data.status;
           this.responseMsg = res.data.message;
         } catch (err) {
-          console.log(err);
+          this.responseStatusCode = err.response.data.status;
+          this.responseMsg = err.response.data.message;
         }
 
         if (this.responseStatusCode) {
@@ -144,6 +150,7 @@ export default {
 
 .invalid-feedback
   color: red
+
 #course_name.invalid-feedback
   border-bottom: 1px solid red
 
@@ -154,7 +161,7 @@ $var4: #c62828
 
 html
   line-height: 1.5
-  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif
 
 .materialert
   position: relative
@@ -165,8 +172,8 @@ html
   border: 1px solid transparent
   border-radius: 4px
   transition: all 0.1s linear
-  webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2)
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2)
+  webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2)
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2)
   display: -webkit-box
   display: -webkit-flex
   display: -ms-flexbox
@@ -175,6 +182,7 @@ html
   -webkit-align-items: center
   -ms-flex-align: center
   align-items: center
+
   .material-icons
     margin-right: 10px
 

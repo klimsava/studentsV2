@@ -4,11 +4,11 @@
 
     <div v-if="submitted">
       <div v-if="responseStatusCode" class="materialert success">
-        {{this.responseMsg}}
+        {{ this.responseMsg }}
       </div>
 
       <div v-else class="materialert error">
-        {{this.responseMsg}}
+        {{ this.responseMsg }}
       </div>
     </div>
 
@@ -108,7 +108,7 @@ export default {
       if (!this.$v.form.$error) {
         this.submitted = true;
         const {...form} = this.form;
-        try{
+        try {
           let res = await coursesModule(instance).addCourse({
             name: form.name,
             description: form.description,
@@ -117,7 +117,8 @@ export default {
           this.responseStatusCode = res.data.status;
           this.responseMsg = res.data.message;
         } catch (err) {
-          console.log(err);
+          this.responseStatusCode = err.response.data.status;
+          this.responseMsg = err.response.data.message;
         }
 
         if (this.responseStatusCode) {
@@ -190,7 +191,7 @@ $var4: #c62828
 
 html
   line-height: 1.5
-  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif
 
 .materialert
   position: relative
@@ -201,8 +202,8 @@ html
   border: 1px solid transparent
   border-radius: 4px
   transition: all 0.1s linear
-  webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2)
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2)
+  webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2)
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2)
   display: -webkit-box
   display: -webkit-flex
   display: -ms-flexbox
@@ -211,6 +212,7 @@ html
   -webkit-align-items: center
   -ms-flex-align: center
   align-items: center
+
   .material-icons
     margin-right: 10px
 

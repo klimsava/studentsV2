@@ -13,6 +13,9 @@ export default function (instance) {
     },
     changeStudent(payload, id) {
       return instance.put(`api/students/${id}`, qs.stringify(payload));
+    },
+    selectedCourse(payload) {
+      return instance.post(`api/students/chosen-course`, qs.stringify(payload));
     }
   }
 }

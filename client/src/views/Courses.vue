@@ -16,7 +16,8 @@
             <span class="box-courses__time">{{ course.time }}</span>
             <p class="box-courses__desc">{{ course.description }}</p>
           </li>
-          <a class="waves-effect waves-light btn" @click="$router.push({name: 'EditCourse', params: {course_id: course.id}})">Edit</a>
+          <a class="waves-effect waves-light btn"
+             @click="$router.push({name: 'EditCourse', params: {course_id: course.id}})">Edit</a>
           <a class="waves-effect waves-light btn" @click="removeCourse(course.id)">Delete</a>
         </div>
       </ul>
@@ -29,15 +30,14 @@
 import {mapActions} from 'vuex';
 import {validationMixin} from 'vuelidate'
 import {required, minLength} from 'vuelidate/lib/validators'
-import coursesModule from "@/api/courses";
-import instance from "@/api/instance";
+import coursesModule from "../api/courses";
+import instance from "../api/instance";
 
 export default {
   mixins: [validationMixin],
   name: 'Courses',
   data() {
-    return {
-    }
+    return {}
   },
   computed: {
     courses() {
@@ -111,6 +111,7 @@ export default {
   align-items: center
   justify-content: space-between
   margin: 20px
+
   &__title
     text-transform: uppercase
     margin: 0
