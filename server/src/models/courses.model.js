@@ -1,4 +1,4 @@
-const dbConnect = require('../../config/db.config');
+const dbConnect = require('../../components/db');
 
 const Courses = function (courses) {
   this.name = courses.name;
@@ -7,78 +7,73 @@ const Courses = function (courses) {
 }
 
 //get all courses
-Courses.getAllCourses = result => {
-  dbConnect.query('Select * FROM courses', (err, res) => {
-    if (err) {
-      console.log('Error while fetching courses', err);
-      result(null, err);
-    }
-
+async function getAllCourses() {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute('SELECT * FROM courses');
     console.log('Courses fetched successfully');
-    result(null, res);
-  });
-};
+    return rows;
+  } catch (err) {
+    return err;
+  }
+}
 
 //create new course
-Courses.createCourse = (courseData, result) => {
-  dbConnect.query('INSERT INTO courses SET ? ', courseData, (err, res) => {
-    if (err) {
-      console.log('Error while inserting data', err);
-      result(null, err);
-    }
+async function createCourse(courseData) {
+  try {
+    let res = await dbConnect();
 
-    console.log('Course created successfully');
-    result(null, res);
-  });
-};
+    const response = await res.query('INSERT INTO courses SET ?', courseData, async function (err, result, fields) {
+      return result;
+    });
+
+    console.log('Courses fetched successfully');
+    return await response;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
 
 //check exist student in DB
-Courses.checkCourseExist = (courseData, result) => {
-  dbConnect.query('SELECT COUNT(*) AS courseExists FROM courses WHERE name=?',
-    [courseData.name],
-    (err, res) => {
-      if (err) {
-        console.log('', err);
-        result(null, err);
-      }
-      console.log('Result course ', res[0].courseExists);
+async function checkCourseExist(courseData) {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute('SELECT 1 AS courseExists FROM courses WHERE name=?', [courseData.name]);
 
-      result(null, res[0].courseExists);
-    })
-};
+    return rows[0].courseExists;
+  } catch (err) {
+    return err;
+  }
+}
 
-//update course
-Courses.updateCourse = (id, courseReqData, result) => {
-  dbConnect.query(
-    "UPDATE courses SET name=?, description=?, time=? WHERE id = ?",
-    [courseReqData.name, courseReqData.description, courseReqData.time, id],
-    (err, res) => {
-      if (err) {
-        console.log('Error while updating the course', err);
-        result(null, err);
-      }
+// //update course
+async function updateCourse(id, courseReqData) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query('UPDATE courses SET name=?, description=?, time=? WHERE id = ?', [courseReqData.name, courseReqData.description, courseReqData.time, id], async function (err, result, fields) {
+      return result;
+    });
 
-      console.log('Course updated successfully');
-      result(null, res);
-    }
-  );
-};
+    console.log('Courses fetched successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
 
-//delete course
-Courses.deleteCourse = (id, result) => {
-  dbConnect.query(
-    "DELETE FROM courses WHERE id=?",
-    [id],
-    (err, res) => {
-      if (err) {
-        console.log('Error while deleting course.');
-        result(null, err);
-      }
+// //delete course
+async function deleteCourse(id) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query('DELETE FROM courses WHERE id=?', [id], async function (err, result) {
+      return result;
+    });
 
-      console.log('Course deleted successfully');
-      result(null, res);
-    }
-  );
-};
+    console.log('Course deleted successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
 
-module.exports = Courses;
+module.exports = {Courses, getAllCourses, checkCourseExist, createCourse, updateCourse, deleteCourse};

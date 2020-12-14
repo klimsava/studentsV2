@@ -1,4 +1,4 @@
-const dbConnect = require('../../config/db.config');
+const dbConnect = require('../../components/db');
 
 const Students = function (students) {
   this.first_name = students.first_name;
@@ -7,111 +7,110 @@ const Students = function (students) {
 }
 
 //get all students
-Students.getAllStudents = result => {
-  dbConnect.query('SELECT * FROM students', (err, res) => {
-    if (err) {
-      console.log('Error while fetching students', err);
-      result(null, err);
-    }
-
+async function getAllStudents() {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute('SELECT * FROM students');
     console.log('Students fetched successfully');
-    result(null, res);
-  });
-};
+    return rows;
+  } catch (err) {
+    return err;
+  }
+}
 
 //create new student
-Students.createStudent = (studentData, result) => {
-  dbConnect.query('INSERT INTO students SET ? ', studentData, (err, res) => {
-    if (err) {
-      console.log('Error while inserting data', err);
-      result(null, err);
-    }
+async function createStudent(studentData) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query("INSERT INTO students SET ? ", [studentData], async function (err, result) {
+      return result;
+    });
 
-    console.log('Student created successfully');
-    result(null, res);
-  })
-};
+    console.log('Courses fetched successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
 
 //check exist student in DB
-Students.checkStudentExist = (studentData, result) => {
-  dbConnect.query('SELECT COUNT(*) AS nameExists FROM students WHERE first_name=? AND last_name=?',
-    [studentData.first_name, studentData.last_name],
-    (err, res) => {
-      if (err) {
-        console.log('', err);
-        result(null, err);
-      }
-      console.log('Result student', res[0].nameExists);
+async function checkStudentExist(studentData) {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute("SELECT 1 AS nameExists FROM students WHERE first_name=? AND last_name=? LIMIT 1", [studentData.first_name, studentData.last_name]);
 
-      result(null, res[0].nameExists);
-    })
-};
+    return rows;
+  } catch (err) {
+    return err;
+  }
+}
 
 //update student
-Students.updateStudents = (id, studentReqData, result) => {
-  dbConnect.query(
-    "UPDATE students SET first_name=?, last_name=?, age=? WHERE id = ?",
-    [studentReqData.first_name, studentReqData.last_name, studentReqData.age, id],
-    (err, res) => {
-      if (err) {
-        console.log('Error while updating the student');
-        result(null, err);
-      }
-
-      console.log('Student updated successfully');
-      result(null, res);
+async function updateStudents(id, studentReqData) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query("UPDATE students SET first_name=?, last_name=?, age=? WHERE id = ?", [studentReqData.first_name, studentReqData.last_name, studentReqData.age, id], async function (err, result, fields) {
+      return result;
     });
-};
+
+    console.log('Student updated successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
 
 //delete student
-Students.deleteStudent = (id, result) => {
-  dbConnect.query(
-    "DELETE FROM students WHERE id= ?",
-    [id],
-    (err, res) => {
-      if (err) {
-        console.log('Error while deleting student.');
-        result(null, err);
-      }
+async function deleteStudent(id) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query("DELETE FROM students WHERE id= ?", [id], async function (err, result) {
+      return result;
+    });
 
-      console.log('Student deleted successfully');
-      result(null, res);
-    }
-  );
-};
+    console.log('Student deleted successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
 
 //Select course
-Students.selectCourse = (selectCourseData, result) => {
-  dbConnect.query('INSERT INTO student_courses (student_id, course_id) VALUES ?',
-    [getCorrectResult(getResultClient(selectCourseData))],
-    (err, res) => {
-      if (err) {
-        console.log('', err);
-        result(null, err);
-      }
-      console.log('Result student', res);
-
-      result(null, res);
-    })
-};
-
-Students.checkSelectedCourse = (selectCourseData, result) => {
-  dbConnect.query('SELECT student_id, course_id FROM student_courses WHERE student_id=?;',
-    [selectCourseData.studentId],
-    (err, res) => {
-      if (err) {
-        console.log('', err);
-        result(null, err);
-      }
-      let resultFromDB = res.map(item => {
-        return {studentId: item.student_id, course_id: item.course_id};
-      });
-
-      result(null, checkingSameRecord(resultFromDB, getResultClient(selectCourseData)).length);
+async function selectCourse(selectCourseData) {
+  try {
+    let res = await dbConnect();
+    const response = await res.query("INSERT INTO student_courses (student_id, course_id) VALUES ?", [getCorrectResult(getResultClient(selectCourseData))], async function (err, result) {
+      return result;
     });
-};
 
-function checkingSameRecord(resultDB, resultClient) {
+    console.log('Courses fetched successfully');
+    return await response;
+  } catch (err) {
+    return err;
+  }
+}
+
+async function checkSelectedCourse(selectCourseData) {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute("SELECT student_id, course_id FROM student_courses WHERE student_id=?", [selectCourseData.studentId]);
+
+    let times = await getCourseTimeStudent(selectCourseData.studentId, selectCourseData.courseId);
+    let resultFromDB = rows.map(item => {
+      return {studentId: item.student_id, course_id: item.course_id};
+    });
+
+    if (await checkCourseTime(times, selectCourseData.courseId)) {
+      return true;
+    }
+
+    return checkSameRecord(resultFromDB, getResultClient(selectCourseData)).length
+  } catch (err) {
+    return err;
+  }
+}
+
+function checkSameRecord(resultDB, resultClient) {
   let result = [];
 
   resultDB.forEach(function (elementOfSomeArray) {
@@ -149,4 +148,43 @@ function getCorrectResult(arr) {
   }, [])
 }
 
-module.exports = Students;
+async function getCourseTimeStudent(studentId) {
+  let res = await dbConnect();
+  let [rows, fields] = await res.execute("SELECT student_id, time FROM students JOIN student_courses ON students.id = student_courses.student_id JOIN courses on student_courses.course_id = courses.id");
+
+  let resultFromDB = rows.map(item => {
+    return {studentId: item.student_id, time: item.time};
+  });
+
+  let result = [];
+  resultFromDB.forEach(function (values, item) {
+    if (+values.studentId === +studentId) {
+      result.push(values.time);
+    }
+  });
+
+  return result;
+}
+
+async function checkCourseTime(courseTime, courseId) {
+  try {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute("SELECT time FROM courses WHERE id=?", [courseId]);
+    return courseTime.forEach(item => {
+      return item === rows[0].time;
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+module.exports = {
+  Students,
+  getAllStudents,
+  createStudent,
+  checkStudentExist,
+  updateStudents,
+  deleteStudent,
+  checkSelectedCourse,
+  selectCourse
+};
