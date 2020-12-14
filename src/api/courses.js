@@ -8,7 +8,7 @@ export default function (instance) {
     removeCourse(id) {
       return instance.delete(`api/courses/${id}`);
     },
-    addCourse(payload) {
+    AddCourse(payload) {
       return instance.post('api/courses/', qs.stringify(payload));
     },
     changeCourse(payload, id) {
