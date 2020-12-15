@@ -2,16 +2,16 @@ const studentsModel = require('../models/students.model');
 const {Students} = require("../models/students.model");
 
 //get all students
-async function getListAllStudents(req, res) {
+exports.getListAllStudents = async (req, res) => {
   try {
     return res.status(200).json(await studentsModel.getAllStudents());
   } catch (err) {
     return res.send(500, err);
   }
-}
+};
 
 //create new student
-async function createNewStudent(req, res) {
+exports.createNewStudent = async (req, res) => {
   try {
     const studentReqData = new Students(req.body);
     let data = await studentsModel.checkStudentExist(studentReqData);
@@ -34,10 +34,10 @@ async function createNewStudent(req, res) {
   } catch (err) {
     throw new Error(err);
   }
-}
+};
 
 //update student
-async function updateStudents(req, res) {
+exports.updateStudents = async (req, res) => {
   try {
     const studentReqData = new Students(req.body);
     let data = await studentsModel.checkStudentExist(studentReqData);
@@ -60,10 +60,10 @@ async function updateStudents(req, res) {
   } catch (err) {
     throw new Error(err);
   }
-}
+};
 
 //delete student
-async function deleteStudent(req, res) {
+exports.deleteStudent = async (req, res) => {
   try {
     await studentsModel.deleteStudent(req.params.id);
     return res.status(200).json({
@@ -73,9 +73,9 @@ async function deleteStudent(req, res) {
   } catch (err) {
     return res.send(500, err);
   }
-}
+};
 
-async function selectCourse(req, res) {
+exports.selectCourse = async (req, res) => {
   let response = await studentsModel.checkSelectedCourse(req.body);
 
   if (response) {
@@ -91,6 +91,4 @@ async function selectCourse(req, res) {
       return res.send(500, err);
     }
   }
-}
-
-exports.studentsController = {getListAllStudents, createNewStudent, updateStudents, deleteStudent, selectCourse};
+};

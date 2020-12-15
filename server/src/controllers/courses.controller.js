@@ -2,16 +2,17 @@ const coursesModel = require('../models/courses.model');
 const {Courses} = require("../models/courses.model");
 
 //get all courses
-async function getListAllCourses(req, res) {
+exports.getListAllCourses = async (req, res) => {
   try {
+    console.log(coursesModel.getAllCourses());
     return res.status(200).json(await coursesModel.getAllCourses());
   } catch (err) {
-    return res.send(500, err);
+    return res.status(500).send(err);
   }
-}
+};
 
 //create new course
-async function createNewCourse(req, res) {
+exports.createNewCourse = async (req, res) => {
   try {
     const courseReqData = new Courses(req.body);
     let data = await coursesModel.checkCourseExist(courseReqData);
@@ -34,10 +35,10 @@ async function createNewCourse(req, res) {
   } catch (err) {
     throw new Error(err);
   }
-}
+};
 
 //update courses
-async function updateCourse(req, res) {
+exports.updateCourse = async (req, res) => {
   try {
     const courseReqData = new Courses(req.body);
     let data = await coursesModel.checkCourseExist(courseReqData);
@@ -60,10 +61,10 @@ async function updateCourse(req, res) {
   } catch (err) {
     throw new Error(err);
   }
-}
+};
 
 //delete course
-async function deleteCourse(req, res) {
+exports.deleteCourse = async (req, res) => {
   try {
     await coursesModel.deleteCourse(req.params.id);
     return res.status(200).json({
@@ -73,6 +74,4 @@ async function deleteCourse(req, res) {
   } catch (err) {
     return res.send(500, err);
   }
-}
-
-exports.coursesController = {getListAllCourses, createNewCourse, updateCourse, deleteCourse};
+};
