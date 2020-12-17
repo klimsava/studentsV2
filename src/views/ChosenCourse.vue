@@ -28,7 +28,7 @@
           </div>
           <label class="checkboxCourse">
             <input
-                type="checkbox"
+                type="radio"
                 :value="course.id"
                 id="course.id"
                 v-model="object.checkedCategories"
@@ -60,7 +60,7 @@ export default {
     return {
       object: {
         studentId: this.$route.params.profile_id,
-        checkedCategories: [],
+        checkedCategories: null,
         selected: false,
       },
       responseStatusCode: null,
