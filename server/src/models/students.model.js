@@ -1,190 +1,108 @@
 const dbConnect = require('../../components/db');
 
-const Students = function (students) {
-  this.first_name = students.first_name;
-  this.last_name = students.last_name;
-  this.age = students.age;
-}
+module.exports = class Students {
+  constructor(students) {
+    this.first_name = students.first_name;
+    this.last_name = students.last_name;
+    this.age = students.age;
+  }
 
-//get all students
-async function getAllStudents() {
-  try {
+  static async getAllStudents() {
     let res = await dbConnect();
     let [rows, fields] = await res.execute('SELECT * FROM students');
     console.log('Students fetched successfully');
     return rows;
-  } catch (err) {
-    return err;
   }
-}
 
-//create new student
-async function createStudent(studentData) {
-  try {
+  static async createStudent(studentData) {
     let res = await dbConnect();
-    const response = await res.query("INSERT INTO students SET ? ", [studentData], async function (err, result) {
+    return await res.query("INSERT INTO students SET ? ", [studentData], async function (err, result) {
       return result;
     });
-
-    console.log('Courses fetched successfully');
-    return await response;
-  } catch (err) {
-    return err;
   }
-}
 
-//check exist student in DB
-async function checkStudentExist(studentData) {
-  try {
+  static async checkStudentExist(studentData) {
     let res = await dbConnect();
-    let [rows, fields] = await res.execute("SELECT 1 AS nameExists FROM students WHERE first_name=? AND last_name=? LIMIT 1", [studentData.first_name, studentData.last_name]);
+    let [rows, fields] = await res.execute("SELECT 1 FROM students WHERE first_name=? AND last_name=?", [studentData.first_name, studentData.last_name]);
 
     return rows;
-  } catch (err) {
-    return err;
   }
-}
 
-//update student
-async function updateStudents(id, studentReqData) {
-  try {
+  static async updateStudents(id, studentReqData) {
     let res = await dbConnect();
-    const response = await res.query("UPDATE students SET first_name=?, last_name=?, age=? WHERE id = ?", [studentReqData.first_name, studentReqData.last_name, studentReqData.age, id], async function (err, result, fields) {
+    return await res.query("UPDATE students SET first_name=?, last_name=?, age=? WHERE id = ?", [studentReqData.first_name, studentReqData.last_name, studentReqData.age, id], async function (err, result, fields) {
       return result;
     });
-
-    console.log('Student updated successfully');
-    return await response;
-  } catch (err) {
-    return err;
   }
-}
 
-//delete student
-async function deleteStudent(id) {
-  try {
+  static async deleteStudent(id) {
     let res = await dbConnect();
-    const response = await res.query("DELETE FROM students WHERE id= ?", [id], async function (err, result) {
+    return await res.query("DELETE FROM students WHERE id= ?", [id], async function (err, result) {
       return result;
     });
-
-    console.log('Student deleted successfully');
-    return await response;
-  } catch (err) {
-    return err;
   }
-}
 
-//Select course
-async function selectCourse(selectCourseData) {
-  try {
+  static async selectCourse(studentId, courseId) {
     let res = await dbConnect();
-    const response = await res.query("INSERT INTO student_courses (student_id, course_id) VALUES ?", [getCorrectResult(getResultClient(selectCourseData))], async function (err, result) {
+    return await res.query("INSERT INTO student_courses SET ?", [{
+      student_id: studentId,
+      course_id: courseId
+    }], async function (err, result) {
       return result;
     });
-
-    console.log('Courses fetched successfully');
-    return await response;
-  } catch (err) {
-    return err;
   }
-}
 
-async function checkSelectedCourse(selectCourseData) {
-  try {
+  static async getAllCourseTimeStudent(studentId) {
     let res = await dbConnect();
-    let [rows, fields] = await res.execute("SELECT student_id, course_id FROM student_courses WHERE student_id=?", [selectCourseData.studentId]);
+    let [rows, fields] = await res.execute("SELECT student_id, time FROM students JOIN student_courses ON students.id = student_courses.student_id JOIN courses on student_courses.course_id = courses.id WHERE student_courses.student_id = ?", [studentId]);
 
-    let times = await getCourseTimeStudent(selectCourseData.studentId, selectCourseData.courseId);
-    let resultFromDB = rows.map(item => {
-      return {studentId: item.student_id, course_id: item.course_id};
+    return rows.map(item => {
+      return {studentId: item.student_id, time: item.time};
     });
+  }
 
-    if (await checkCourseTime(times, selectCourseData.courseId)) {
-      return true;
+  static async getTimeCourse(courseId) {
+    let res = await dbConnect();
+    let [rows, fields] = await res.execute("SELECT time FROM `students_db`.`courses` WHERE `id`=?", [courseId]);
+
+    return rows[0].time;
+  }
+
+  static async checkingExistCourse(allCourses, courseTime) {
+    let result = [];
+
+    for (let i = 0; i < allCourses.length; i++) {
+      result.push(allCourses[i].time);
     }
 
-    return checkSameRecord(resultFromDB, getResultClient(selectCourseData)).length
-  } catch (err) {
-    return err;
-  }
-}
+    for (const item of result) {
+      let time = item.match(/(\d{2}):(\d{2}):(\d{2})/);
+      let hour = +time[1];
+      let minute = +time[2];
 
-function checkSameRecord(resultDB, resultClient) {
-  let result = [];
-
-  resultDB.forEach(function (elementOfSomeArray) {
-    resultClient.forEach(function (elementOfOtherArray) {
-      if (JSON.stringify(elementOfSomeArray) === JSON.stringify(elementOfOtherArray)) {
-        result.push(elementOfOtherArray);
-      }
-    });
-  });
-
-  return result;
-}
-
-function getResultClient(data) {
-  let resultClient = [];
-
-  if (data.courseId.length > 1) {
-    data.courseId.forEach(courseId => {
-      resultClient.push({studentId: +data.studentId, course_id: +courseId});
-    });
-  } else {
-    resultClient.push({studentId: +data.studentId, course_id: +data.courseId})
-  }
-
-  return resultClient;
-}
-
-function getCorrectResult(arr) {
-  return arr.reduce((index, item) => {
-    let array = [];
-    array.push(item.studentId);
-    array.push(item.course_id);
-    index.push(array);
-    return index;
-  }, [])
-}
-
-async function getCourseTimeStudent(studentId) {
-  let res = await dbConnect();
-  let [rows, fields] = await res.execute("SELECT student_id, time FROM students JOIN student_courses ON students.id = student_courses.student_id JOIN courses on student_courses.course_id = courses.id");
-
-  let resultFromDB = rows.map(item => {
-    return {studentId: item.student_id, time: item.time};
-  });
-
-  let result = [];
-  resultFromDB.forEach(function (values, item) {
-    if (+values.studentId === +studentId) {
-      result.push(values.time);
+      if (await this.compareTime(hour, minute, courseTime)) return true;
     }
-  });
-
-  return result;
-}
-
-async function checkCourseTime(courseTime, courseId) {
-  try {
-    let res = await dbConnect();
-    let [rows, fields] = await res.execute("SELECT time FROM courses WHERE id=?", [courseId]);
-    return courseTime.forEach(item => {
-      return item === rows[0].time;
-    });
-  } catch (err) {
-    throw new Error(err);
   }
-}
 
-module.exports = {
-  Students,
-  getAllStudents,
-  createStudent,
-  checkStudentExist,
-  updateStudents,
-  deleteStudent,
-  checkSelectedCourse,
-  selectCourse
+  static compareTime(hour, minute, courseTime) {
+    const timeRegex = /(\d{2}):(\d{2}):(\d{2})/;
+    let intervalTime = this.buildIntervalTime(hour, minute).match(timeRegex);
+    let selectedCourseTime = courseTime.match(timeRegex);
+
+    return ((+hour === +selectedCourseTime[1] && +minute === +selectedCourseTime[2]) || !((+intervalTime[1] <= +selectedCourseTime[1]) && (+selectedCourseTime[2] > intervalTime[2]) || +selectedCourseTime[1] < hour));
+  }
+
+  static buildIntervalTime(hour, minute) {
+    let intervalHour, intervalMinute;
+    let intervalTime = minute + 45;
+
+    if (intervalTime + 45 > 60) {
+      intervalHour = hour + 1;
+      intervalMinute = intervalTime - 60;
+
+      return intervalHour + ':' + intervalMinute + ':' + '00';
+    }
+
+    return `${hour}:${minute}:00`;
+  }
 };
