@@ -5,7 +5,7 @@ const studentsController = require('../controllers/students.controller');
 const {validatorsSelectedCourses, validatorsId, checkValidationResult, studentsValidators} = require('../validators/validatorsParams');
 
 //get all students
-router.get('/', studentsController.getStudentsList);
+router.get('/', studentsController.getListAllStudents);
 
 //create new student
 router.post('/', studentsValidators, checkValidationResult, studentsController.createNewStudent);
@@ -15,8 +15,8 @@ router.put('/:id', studentsValidators, validatorsId, checkValidationResult, stud
 
 //delete student
 router.delete('/:id', validatorsId, checkValidationResult, studentsController.deleteStudent);
-
-//chosen course
-router.post('/chosen-course', validatorsSelectedCourses, checkValidationResult, studentsController.selectedCourse);
+//
+// //chosen course
+router.post('/chosen-course', validatorsSelectedCourses, checkValidationResult, studentsController.selectCourse);
 
 module.exports = router;

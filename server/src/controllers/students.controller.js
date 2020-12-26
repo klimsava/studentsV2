@@ -1,84 +1,61 @@
-const studentsModel = require('../models/students.model');
+const Students = require("../models/students.model");
 
-//get all students
-exports.getStudentsList = async (req, res) => {
-  try {
-    studentsModel.getAllStudents((err, students) => {
-      console.log('We are here');
-      res.send(200, students);
-    });
-  } catch (err) {
-    res.send(422, err);
+exports.getListAllStudents = async (req, res, next) => {
+  const message = await Students.getAllStudents().catch(next);
+
+  return res.status(200).json(message);
+};
+
+exports.createNewStudent = async (req, res, next) => {
+  const studentReqData = new Students(req.body);
+  if ((await Students.checkStudentExist(studentReqData)).length) {
+    return res.status(409).json({status: false, message: 'The student already exists!'});
   }
-};
 
-//create new student
-exports.createNewStudent = (req, res) => {
-  console.log('create new stud', req.body);
-  const studentReqData = new studentsModel(req.body);
-  studentsModel.checkStudentExist(studentReqData, (err, student) => {
-    if (student) {
-      res.status(422).json({status: false, message: 'The student already exists!'})
-    } else {
-      studentsModel.createStudent(studentReqData, (err, student) => {
-        if (err) {
-          res.send(err);
-        }
+  await Students.createStudent(studentReqData).catch(next);
 
-        res.json({
-          status: true,
-          message: 'Student created successfully',
-          data: student.insertId,
-        });
-      });
-    }
+  return res.status(200).json({
+    status: true,
+    message: 'Student created successfully',
   });
 };
 
-//update student
-exports.updateStudents = (req, res) => {
-  const studentReqData = new studentsModel(req.body);
-  studentsModel.checkStudentExist(studentReqData, (err, student) => {
-    if (student) {
-      res.status(422).json({status: false, message: "Student exists!"});
-    } else {
-      console.log('Students update', studentReqData);
-      studentsModel.updateStudents(req.params.id, studentReqData, (err, student) => {
-        res.json({
-          status: true,
-          message: 'Student updated successfully',
-          data: student.insertId,
-        });
-      });
-    }
+exports.updateStudents = async (req, res, next) => {
+  const studentReqData = new Students(req.body);
+
+  if ((await Students.checkStudentExist(studentReqData)).length) {
+    return res.status(409).json({status: false, message: 'The student already exists!'});
+  }
+
+  await Students.updateStudents(req.params.id, studentReqData).catch(next);
+
+  return res.status(200).json({
+    status: true,
+    message: 'Student updated successfully!',
   });
 };
 
-//delete student
-exports.deleteStudent = (req, res) => {
-  studentsModel.deleteStudent(req.params.id, (err, student) => {
-    res.json({
-      success: true,
-      message: 'Student deleted successfully',
-    });
+exports.deleteStudent = async (req, res, next) => {
+  await Students.deleteStudent(req.params.id).catch(next);
+
+  return res.status(200).json({
+    success: true,
+    message: 'Student deleted successfully!',
   });
 };
 
-exports.selectedCourse = (req, res) => {
-  studentsModel.checkSelectedCourse(req.body, (err, selectedCourse) => {
-    console.log(req.body);
-    if (selectedCourse) {
-      res.status(422).json({status: false, message: 'You are already enrolled in the course at this time!'})
-    } else {
-      studentsModel.selectCourse(req.body, (err, student) => {
-        if (err) {
-          res.send(err);
-        }
-        res.status(200).json({
-          status: true,
-          message: 'The course was successfully selected!',
-        });
-      });
-    }
+exports.selectCourse = async (req, res, next) => {
+  let allCourse = await Students.getAllCourseTimeStudent(req.body.studentId);
+  let courseTime = await Students.getTimeCourse(req.body.courseId);
+
+  if (await Students.checkingExistCourse(allCourse, courseTime)) {
+    return res.status(409).json({status: false, message: 'You already have a course at this time!'});
+  }
+
+  await Students.selectCourse(req.body.studentId, req.body.courseId).catch(next);
+
+  return res.status(200).json({
+    status: true,
+    message: 'The course was successfully selected!',
   });
 };

@@ -70,7 +70,7 @@ exports.coursesValidators = [
     .not()
     .isEmpty()
     .withMessage('Time select is required!')
-    .matches(/^[\d+]{2}:[\d+]{2}$/)
+    .matches(/^\d+:[\d+]{2}$/)
     .withMessage('Time format hh:mm'),
 ];
 

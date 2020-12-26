@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const app = express();
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -21,8 +21,8 @@ const coursesRoutes = require('./src/routes/courses.route');
 app.use('/api/students', studentsRoutes);
 app.use('/api/courses', coursesRoutes);
 
-app.use(function (req, res, next) {
-  res.status(404).json({title: "Sorry, page not found"});
+app.use((error, req, res, next) => {
+  return res.status(500).json({ error: error.toString() });
 });
 
 app.listen(port, () => {

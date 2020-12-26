@@ -1,69 +1,45 @@
-const coursesModel = require('../models/courses.model');
+const Courses = require("../models/courses.model");
 
-//get all courses
-exports.getCoursesList = (req, res) => {
-  coursesModel.getAllCourses((err, courses) => {
-    console.log('We are here');
-    if (err) {
-      res.send(422, err);
-    }
+exports.getListAllCourses = async (req, res, next) => {
+  const message = await Courses.getAllCourses().catch(next);
 
-    console.log('Course', courses);
-    res.send(200, courses);
+  return res.status(200).json(message);
+};
+
+exports.createNewCourse = async (req, res, next) => {
+  const courseReqData = new Courses(req.body);
+  if ((await Courses.checkCourseExist(courseReqData)).length) {
+    return res.status(409).json({status: false, message: 'Course exists!'});
+  }
+
+  await Courses.createCourse(courseReqData).catch(next);
+
+  return res.status(200).json({
+    status: true,
+    message: 'Course created successfully',
   });
 };
 
-//create new course
-exports.createNewCourse = (req, res) => {
-  console.log('create new course', req.body);
-  const courseReqData = new coursesModel(req.body);
-  coursesModel.checkCourseExist(courseReqData, (err, course) => {
-    if (course) {
-      res.status(422).json({status: false, message: 'Course exists!'})
-    } else {
-      console.log('Valid data');
-      coursesModel.createCourse(courseReqData, (err, course) => {
-        if (err) {
-          res.send(err);
-        }
+exports.updateCourse = async (req, res, next) => {
+  const courseReqData = new Courses(req.body);
 
-        res.json({
-          status: true,
-          message: 'Course created successfully',
-          data: course.insertId,
-        });
-      });
-    }
+  if ((await Courses.checkCourseExist(courseReqData)).length) {
+    return res.status(409).json({status: false, message: 'Course exists!'});
+  }
+
+  await Courses.updateCourse(req.params.id, courseReqData).catch(next);
+
+  return res.status(200).json({
+    status: true,
+    message: 'Course updated successfully!',
   });
 };
 
-//update courses
-exports.updateCourse = (req, res) => {
-  const courseReqData = new coursesModel(req.body);
-  coursesModel.checkCourseExist(courseReqData, (err, course) => {
-    if (course) {
-      res.status(422).json({status: false, message: 'Course exists!'})
-    } else {
-      console.log('Course update', courseReqData);
-      coursesModel.updateCourse(req.params.id, courseReqData, (err, course) => {
-        res.json({
-          status: true,
-          message: 'Course updated successfully',
-          data: course.insertId,
-        });
-      });
-    }
-  });
-};
+exports.deleteCourse = async (req, res, next) => {
+  await Courses.deleteCourse(req.params.id).catch(next);
 
-//delete course
-exports.deleteCourse = (req, res) => {
-  coursesModel.deleteCourse(req.params.id, err => {
-    if (err)
-      res.send(err);
-    res.json({
-      success: true,
-      message: 'Course deleted successfully',
-    });
+  return res.status(200).json({
+    success: true,
+    message: 'Course deleted successfully!',
   });
 };
