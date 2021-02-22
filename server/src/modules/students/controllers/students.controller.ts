@@ -3,8 +3,8 @@ import { Students } from '../../database/entities/students.entity';
 import { CreateStudentsDto, SelectCourse, UpdateStudentsDto } from '../../dto/dto';
 import { StudentsService } from '../services/students.service';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotFoundResponse } from '../../type/notFoundResponse';
-import { SuccessResponse } from '../../type/successResponse';
+import { NotFoundResponse } from '../../types/notFoundResponse';
+import { SuccessResponse } from '../../types/successResponse';
 
 @ApiTags('students')
 @Controller('api/students')
@@ -38,7 +38,7 @@ export class StudentsController {
     @ApiResponse({ status: 409, description: 'Not Found Error.', type: NotFoundResponse})
     async updateCourse(
         @Param('id') id: string,
-        @Body() {first_name, last_name, age}: UpdateStudentsDto): Promise<SuccessResponse> {
+        @Body() {firstName, lastName, age}: UpdateStudentsDto): Promise<SuccessResponse> {
 
         const student = await this.studentsService.findOne(id);
 
@@ -46,12 +46,12 @@ export class StudentsController {
             throw new NotFoundException(`Student with id = ${id} not exists`);
         }
 
-        student.first_name = first_name;
-        student.last_name = last_name;
+        student.firstName = firstName;
+        student.lastName = lastName;
         student.age = age;
 
         const allStudents = await this.studentsService.findAllStudents();
-        const findPerson = !!allStudents.find(students => students.first_name.toLowerCase() === student.first_name.toLowerCase() && students.last_name.toLowerCase() === student.last_name.toLowerCase());
+        const findPerson = !!allStudents.find(students => students.firstName.toLowerCase() === student.firstName.toLowerCase() && students.lastName.toLowerCase() === student.lastName.toLowerCase());
 
         if (findPerson) {
             throw new ConflictException(`Student already exist!`);
@@ -78,6 +78,8 @@ export class StudentsController {
     @Header('Cache-Control', 'none')
     async selectCourse(@Body() selectCourse: SelectCourse): Promise<SuccessResponse> {
         const allCourse = await this.studentsService.getAllCourseTimeStudent(selectCourse.studentId);
+        console.log(allCourse);
+        console.log(selectCourse.courseId);
         const courseTime = await this.studentsService.getTimeCourse(selectCourse.courseId);
 
         if (await this.studentsService.checkingExistCourse(allCourse, courseTime)) {

@@ -2,8 +2,8 @@ import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Hea
 import { Courses } from '../../database/entities/courses.entity';
 import { CreateCourseDto, UpdateCourseDto } from '../../dto/dto';
 import {CoursesService} from '../services/courses.service';
-import {NotFoundResponse} from '../../type/notFoundResponse';
-import {SuccessResponse} from '../../type/successResponse';
+import {NotFoundResponse} from '../../types/notFoundResponse';
+import {SuccessResponse} from '../../types/successResponse';
 import {ApiBody, ApiResponse, ApiTags} from '@nestjs/swagger';
 
 @ApiTags('courses')

@@ -20,18 +20,18 @@ export class UpdateCourseDto {
 
 export class CreateStudentsDto {
     @ApiProperty()
-    first_name: string;
+    firstName: string;
     @ApiProperty()
-    last_name: string;
+    lastName: string;
     @ApiProperty()
     age: number;
 }
 
 export class UpdateStudentsDto {
     @ApiProperty()
-    first_name: string;
+    firstName: string;
     @ApiProperty()
-    last_name: string;
+    lastName: string;
     @ApiProperty()
     age: number;
 }
