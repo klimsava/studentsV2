@@ -3,7 +3,7 @@
     <h2 class="course-title">Create new course</h2>
 
     <div v-if="submitted">
-      <div v-if="responseStatusCode" class="materialert success">
+      <div v-if="responseStatus" class="materialert success">
         {{ this.responseMessage }}
       </div>
 
@@ -73,7 +73,7 @@
 <script>
 import {validationMixin} from 'vuelidate'
 import {required, minLength} from 'vuelidate/lib/validators'
-import instance from "../api/instance";
+import instance from '../api/instance';
 import coursesModule from '../api/courses';
 
 export default {
@@ -87,7 +87,7 @@ export default {
         name: '',
         description: ''
       },
-      responseStatusCode: null,
+      responseStatus: null,
       responseMessage: null,
       submitted: false,
     }
@@ -99,38 +99,7 @@ export default {
       time: {required},
     }
   },
-  methods: {
-    selectCourseTime() {
-      this.form.times = this.getCourseTimes();
-    },
-    async addCourse() {
-      this.$v.form.$touch()
-
-      if (!this.$v.form.$error) {
-        this.submitted = true;
-        const {...form} = this.form;
-
-        try {
-          let res = await coursesModule(instance).AddCourse({
-            name: form.name,
-            description: form.description,
-            time: form.time,
-          });
-
-          this.responseStatusCode = res.data.status;
-          this.responseMessage = res.data.message;
-        } catch (err) {
-          this.responseStatusCode = err.response.data.status;
-          this.responseMessage = err.response.data.message;
-        }
-
-        if (this.responseStatusCode) {
-          setTimeout(() => {
-            this.$router.go(-1);
-          }, 1000);
-        }
-      }
-    },
+  computed: {
     getCourseTimes() {
       const times = [];
       const result = [];
@@ -159,6 +128,37 @@ export default {
       });
 
       return result;
+    }
+  },
+  methods: {
+    selectCourseTime() {
+      this.form.times = this.getCourseTimes;
+    },
+
+    async addCourse() {
+      this.$v.form.$touch();
+
+      if (!this.$v.form.$error) {
+        this.submitted = true;
+        const formData = this.form;
+
+        try {
+          let res = await coursesModule(instance).addCourse({...formData});
+
+          this.responseStatus = res.data.status;
+          this.responseMessage = res.data.message;
+          this.submitted = true;
+        } catch (err) {
+          this.responseStatus = err.response.data.status;
+          this.responseMessage = err.response.data.message;
+        }
+
+        if (this.responseStatus) {
+          setTimeout(() => {
+            this.$router.go(-1);
+          }, 1000);
+        }
+      }
     }
   }
 }

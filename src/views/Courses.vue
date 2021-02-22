@@ -1,9 +1,11 @@
 <template>
   <div>
+
     <div class="top-box">
       <h1 class="top-box__title">Courses</h1>
       <a class="btn-floating btn-large waves-effect teal accent-4" @click="$router.push({name: 'AddCourse'})">+</a>
     </div>
+
     <div class="box-courses">
       <ul v-if="courses.length" class="box-courses__list">
         <div
@@ -23,13 +25,14 @@
       </ul>
       <p v-else>There are no courses now!</p>
     </div>
+
   </div>
 </template>
 
 <script>
 import {mapActions} from 'vuex';
-import coursesModule from "../api/courses";
-import instance from "../api/instance";
+import coursesModule from '../api/courses';
+import instance from '../api/instance';
 
 export default {
   name: 'Courses',
@@ -42,17 +45,21 @@ export default {
     }
   },
   methods: {
+
     ...mapActions({
       load: 'loadCourses',
     }),
-    async removeCourse(id) {
-      await this.$store.commit('REMOVE_COURSE', id);
-      await coursesModule(instance).removeCourse(id);
+
+    removeCourse(id) {
+      this.$store.commit('REMOVE_COURSE', id);
+      coursesModule(instance).removeCourse(id);
     },
-    changeCourse(id) {
+
+    editCourse(id) {
       this.form.id = id;
       this.change = !this.change;
     },
+
   },
   created() {
     this.load()

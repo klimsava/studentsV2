@@ -80,7 +80,7 @@ import instance from "../api/instance";
 
 export default {
   mixins: [validationMixin],
-  name: 'AddStudent',
+  name: 'editStudent',
   data() {
     return {
       form: {
@@ -108,12 +108,9 @@ export default {
       if (!this.$v.form.$error) {
         this.submitted = true;
         const {...form} = this.form;
+
         try {
-          let res = await studentsModule(instance).editStudent({
-            first_name: form.firstName,
-            last_name: form.lastName,
-            age: form.age,
-          }, form.profile_id);
+          let res = await studentsModule(instance).editStudent({...form}, form.profile_id);
 
           this.responseStatusCode = res.data.status;
           this.responseMessage = res.data.message;

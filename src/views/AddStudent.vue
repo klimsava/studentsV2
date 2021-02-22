@@ -3,7 +3,7 @@
     <h2 class="course-title">Add new student</h2>
 
     <div v-if="submitted">
-      <div v-if="responseStatusCode" class="materialert success">
+      <div v-if="responseStatus" class="materialert success">
         {{ this.responseMessage }}
       </div>
 
@@ -84,11 +84,11 @@ export default {
   data() {
     return {
       form: {
-        firstName: '',
-        lastName: '',
-        age: '',
+        firstName: null,
+        lastName: null,
+        age: null,
       },
-      responseStatusCode: null,
+      responseStatus: null,
       responseMessage: null,
       submitted: false,
     }
@@ -106,21 +106,18 @@ export default {
 
       if (!this.$v.form.$error) {
         this.submitted = true;
-        const {...form} = this.form;
+        const formData = this.form;
+
         try {
-          let res = await studentsModule(instance).addStudent({
-            first_name: form.firstName,
-            last_name: form.lastName,
-            age: form.age,
-          });
-          this.responseStatusCode = res.data.status;
+          let res = await studentsModule(instance).addStudent({...formData});
+          this.responseStatus = res.data.status;
           this.responseMessage = res.data.message;
         } catch (err) {
-          this.responseStatusCode = err.response.data.status;
+          this.responseStatus = err.response.data.status;
           this.responseMessage = err.response.data.message;
         }
 
-        if (this.responseStatusCode) {
+        if (this.responseStatus) {
           setTimeout(() => {
             this.$router.go(-1);
           }, 1000);

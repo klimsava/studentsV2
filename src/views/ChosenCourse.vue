@@ -3,7 +3,7 @@
     <h1>Choose your course</h1>
 
     <div v-if="submitted">
-      <div v-if="responseStatusCode" class="materialert success">
+      <div v-if="responseStatus" class="materialert success">
         {{ this.responseMessage }}
       </div>
 
@@ -63,7 +63,7 @@ export default {
         checkedCategories: null,
         selected: false,
       },
-      responseStatusCode: null,
+      responseStatus: null,
       responseMessage: null,
       submitted: false,
     }
@@ -90,14 +90,14 @@ export default {
               courseId: this.object.checkedCategories,
             });
 
-            this.responseStatusCode = res.data.status;
+            this.responseStatus = res.data.status;
             this.responseMessage = res.data.message;
           } catch (err) {
-            this.responseStatusCode = err.response.data.status;
+            this.responseStatus = err.response.data.status;
             this.responseMessage = err.response.data.message;
           }
 
-          if (this.responseStatusCode) {
+          if (this.responseStatus) {
             setTimeout(() => {
               this.$router.go(-1);
             }, 1000);

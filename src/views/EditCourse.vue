@@ -3,7 +3,7 @@
     <h2 class="course-title">Edit course</h2>
 
     <div v-if="submitted">
-      <div v-if="responseStatusCode" class="materialert success">
+      <div v-if="responseStatus" class="materialert success">
         {{ this.responseMessage }}
       </div>
 
@@ -34,7 +34,7 @@
         </div>
         <div class="row">
           <label>Select a time</label>
-          <select class="browser-default" v-model="form.time" @click="clickSelect()">
+          <select class="browser-default" v-model="form.time" @click="selectCourseTime()">
             <option value="" disabled time>Possible time</option>
             <option
                 v-for="time in form.times"
@@ -78,7 +78,7 @@ import instance from "@/api/instance";
 
 export default {
   mixins: [validationMixin],
-  name: 'AddCourse',
+  name: 'EditCourse',
   data() {
     return {
       form: {
@@ -88,11 +88,12 @@ export default {
         description: '',
         course_id: this.$route.params.course_id,
       },
-      responseStatusCode: null,
+      responseStatus: null,
       responseMessage: null,
       submitted: false,
     }
   },
+
   validations: {
     form: {
       name: {required, minLength: minLength(3)},
@@ -100,38 +101,8 @@ export default {
       time: {required},
     }
   },
-  methods: {
-    clickSelect() {
-      this.form.times = this.getCourseTimes();
-    },
-    async editCourse() {
-      this.$v.form.$touch()
 
-      if (!this.$v.form.$error) {
-        this.submitted = true;
-        const {...form} = this.form;
-
-        try {
-          let res = await coursesModule(instance).changeCourse({
-            name: form.name,
-            description: form.description,
-            time: form.time,
-          }, form.course_id);
-
-          this.responseStatusCode = res.data.status;
-          this.responseMessage = res.data.message;
-        } catch (err) {
-          this.responseStatusCode = err.response.data.status;
-          this.responseMessage = err.response.data.message;
-        }
-
-        if (this.responseStatusCode) {
-          setTimeout(() => {
-            this.$router.go(-1);
-          }, 1000);
-        }
-      }
-    },
+  computed: {
     getCourseTimes() {
       const times = [];
       const result = [];
@@ -161,6 +132,38 @@ export default {
       });
 
       return result;
+    }
+  },
+
+  methods: {
+    selectCourseTime() {
+      this.form.times = this.getCourseTimes;
+    },
+
+    async editCourse() {
+      this.$v.form.$touch()
+
+      if (!this.$v.form.$error) {
+        this.submitted = true;
+        const {name, description, time, course_id} = this.form;
+
+        try {
+          let res = await coursesModule(instance).editCourse({name, description, time}, course_id);
+
+          this.responseStatus = res.data.status;
+          this.responseMessage = res.data.message;
+        } catch (err) {
+          this.responseStatus = err.response.data.status;
+          this.responseMessage = err.response.data.message;
+        }
+
+        if (this.responseStatus) {
+          setTimeout(() => {
+            this.$router.go(-1);
+          }, 1000);
+        }
+
+      }
     }
   }
 }
