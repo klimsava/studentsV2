@@ -1,8 +1,13 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable} from 'typeorm';
-import {ApiProperty} from "@nestjs/swagger";
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
-@Entity()
-export class Courses {
+@Entity('courses')
+export class Courses extends BaseEntity {
     @ApiProperty()
     @PrimaryGeneratedColumn()
     id: number;
@@ -17,5 +22,5 @@ export class Courses {
 
     @ApiProperty()
     @Column('time')
-    time: number;
+    time: string;
 }

@@ -1,92 +1,130 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, ConflictException, Header } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Put,
+    Delete,
+    Res,
+    Param,
+    Body,
+    NotFoundException,
+    ConflictException,
+    Header, ParseIntPipe, HttpStatus, HttpException
+} from '@nestjs/common';
+import { Response } from 'express';
 import { Students } from '../../database/entities/students.entity';
-import { CreateStudentsDto, SelectCourse, UpdateStudentsDto } from '../../dto/dto';
+import { CreateStudentsDto } from '../../dto/create-students.dto';
+import { UpdateStudentsDto } from '../../dto/update-students.dto';
+import { SelectCourse } from '../../dto/select-course.dto';
 import { StudentsService } from '../services/students.service';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NotFoundResponse } from '../../types/notFoundResponse';
+import { ApiBody, ApiResponse, ApiTags, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { NotFound } from '../../types/notFoundResponse';
 import { SuccessResponse } from '../../types/successResponse';
+import { BadRequest } from '../../types/badRequest';
 
 @ApiTags('students')
 @Controller('api/students')
 export class StudentsController {
-    constructor(private readonly studentsService: StudentsService) {}
+    constructor(
+        private readonly studentsService: StudentsService,
+    ) {}
 
     @Get()
-    @ApiResponse({ status: 200, description: 'Show all students.', type: Students})
-    @ApiResponse({ status: 404, description: 'Not Found Error.', type: NotFoundResponse})
-    async getListAllStudents(): Promise<Students[]> {
-        return await this.studentsService.findAllStudents();
+    @ApiResponse({
+        status: 200,
+        type: [Students],
+        description: 'Show all students.',
+    })
+    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    async list(@Res() response: Response): Promise<void> {
+        const students = await this.studentsService.list();
+
+        response
+            .status(200)
+            .send(students.map(val => new Students(val)));
     }
 
     @Post()
-    @ApiBody({ type: CreateStudentsDto })
-    @ApiResponse({ status: 200, description: 'Added new student.', type: Students})
-    @ApiResponse({ status: 404, description: 'Not Found Error.', type: NotFoundResponse})
+    @ApiResponse({
+        status: 201,
+        type: Students,
+        description: 'Created new student.',
+    })
+    @ApiBadRequestResponse({
+        type: BadRequest,
+        description: 'Bad Request',
+    })
     @Header('Cache-Control', 'none')
-    async createNewCourse(@Body() createStudentsDto: CreateStudentsDto): Promise<SuccessResponse> {
-        await this.studentsService.createNewStudent(createStudentsDto)
+    async create(@Body() createStudentsDto: CreateStudentsDto, @Res() response: Response): Promise<void>
+    {
+        const { firstName, lastName } = createStudentsDto;
 
-        return {
-            status: true,
-            message: 'Added new student.'
-        };
+        const user = await this.studentsService.findStudent(firstName, lastName);
+
+        if (user.length) {
+            throw new HttpException('Entity already exists.', HttpStatus.CONFLICT);
+        }
+
+        await this.studentsService.create(createStudentsDto);
+
+        response.status(201).send({status: true, message: 'Added new student.'});
     }
 
     @Put(':id')
-    @ApiBody({ type: UpdateStudentsDto })
-    @ApiResponse({ status: 200, description: 'Update student.', type: Students})
-    @ApiResponse({ status: 409, description: 'Not Found Error.', type: NotFoundResponse})
-    async updateCourse(
-        @Param('id') id: string,
-        @Body() {firstName, lastName, age}: UpdateStudentsDto): Promise<SuccessResponse> {
+    @ApiBody({type: UpdateStudentsDto})
+    @ApiResponse({
+        status: 200,
+        type: Students,
+        description: 'Update student.',
+    })
+    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    async update(
+        @Param('id') id: number,
+        @Body() updateStudentsDto: UpdateStudentsDto, @Res() response: Response): Promise<void> {
 
         const student = await this.studentsService.findOne(id);
 
-        if (student === undefined) {
-            throw new NotFoundException(`Student with id = ${id} not exists`);
+        if (!student) {
+            throw new NotFoundException();
         }
 
-        student.firstName = firstName;
-        student.lastName = lastName;
-        student.age = age;
+        await this.studentsService.update(Object.assign(student, updateStudentsDto));
 
-        const allStudents = await this.studentsService.findAllStudents();
-        const findPerson = !!allStudents.find(students => students.firstName.toLowerCase() === student.firstName.toLowerCase() && students.lastName.toLowerCase() === student.lastName.toLowerCase());
-
-        if (findPerson) {
-            throw new ConflictException(`Student already exist!`);
-        }
-
-        await this.studentsService.updateStudent(student);
-        return {
-            status: true,
-            message: 'Course updated successfully!'
-        };
+        response.status(200).send({status: true, message: 'Student updated successfully!'});
     }
 
     @Delete(':id')
-    @ApiResponse({ status: 200, description: 'This student has been deleted.', type: Students})
-    @ApiResponse({ status: 404, description: 'Not Found Error.', type: NotFoundResponse})
-    async deleteCourse(@Param('id') id: string): Promise<void> {
-        return this.studentsService.removeStudent(id);
+    @ApiResponse({
+        status: 204,
+        description: 'No Content',
+    })
+    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    async delete(@Param('id', ParseIntPipe) id: number, @Res() response: Response): Promise<void> {
+        const student = await this.studentsService.findOne(id);
+
+        if (!student) {
+            throw new NotFoundException();
+        }
+
+        await this.studentsService.delete(id);
+
+        response.status(204).send();
     }
 
     @Post('/chosen-course')
-    @ApiBody({ type: CreateStudentsDto })
-    @ApiResponse({ status: 200, description: 'Added new student.', type: Students})
-    @ApiResponse({ status: 404, description: 'Not Found Error.', type: NotFoundResponse})
+    @ApiBody({type: CreateStudentsDto})
+    @ApiResponse({status: 200, description: 'Select new course.', type: Students})
+    @ApiResponse({status: 404, description: 'Not Found Error.', type: NotFound})
     @Header('Cache-Control', 'none')
     async selectCourse(@Body() selectCourse: SelectCourse): Promise<SuccessResponse> {
         const allCourse = await this.studentsService.getAllCourseTimeStudent(selectCourse.studentId);
-        console.log(allCourse);
-        console.log(selectCourse.courseId);
         const courseTime = await this.studentsService.getTimeCourse(selectCourse.courseId);
 
-        if (await this.studentsService.checkingExistCourse(allCourse, courseTime)) {
+        if (await this.studentsService.check(allCourse, courseTime)) {
             throw new ConflictException('You already have a course at this time!');
         }
 
-        await this.studentsService.selectCourse(selectCourse.studentId, selectCourse.courseId);
+        await this.studentsService.select(selectCourse.studentId, selectCourse.courseId);
 
         return {
             status: true,

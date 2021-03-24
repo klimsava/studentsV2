@@ -1,42 +1,35 @@
-import {ConflictException, Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm';
-import {Courses} from '../../database/entities/courses.entity';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DeleteResult } from 'typeorm';
+import { Courses } from '../../database/entities/courses.entity';
+import { CreateCourseDto } from '../../dto/create-course.dto';
 
 @Injectable()
 export class CoursesService {
     constructor(
         @InjectRepository(Courses)
         private coursesRepository: Repository<Courses>,
-    ) {
+    ) {}
+
+    list(): Promise<Courses[]> {
+        return this.coursesRepository.find();
     }
 
-    async findAllCourses(): Promise<Courses[]> {
-        return await this.coursesRepository.find();
+    findOne(id: number): Promise<Courses> {
+        return this.coursesRepository.findOne(id);
     }
 
-    async findOne(id: string): Promise<Courses> {
-        return await this.coursesRepository.findOne(id);
+    create(createCourseDto: CreateCourseDto): Promise<Courses> {
+        const course = new Courses(createCourseDto);
+
+        return this.coursesRepository.save(course);
     }
 
-    async createNewCourse({name, description, time}): Promise<Courses> {
-        if ((await this.coursesRepository.findOne({name: name}))) {
-            throw new ConflictException('Course already exist!');
-        }
-
-        const course = new Courses();
-        course.name = name;
-        course.description = description;
-        course.time = time;
-
-        return await this.coursesRepository.save(course);
+    delete(id: number): Promise<DeleteResult> {
+        return this.coursesRepository.delete(id);
     }
 
-    async removeCourse(id: string): Promise<void> {
-        await this.coursesRepository.delete(id);
-    }
-
-    async updateCourse(Course: Courses): Promise<Courses> {
-        return await this.coursesRepository.save(Course);
+    update(course: Courses): Promise<Courses> {
+        return this.coursesRepository.save(course);
     }
 }

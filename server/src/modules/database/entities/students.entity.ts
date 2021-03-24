@@ -1,9 +1,17 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable} from 'typeorm';
-import {Courses} from "./courses.entity";
-import {ApiProperty} from "@nestjs/swagger";
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    ManyToMany,
+    JoinTable, Index
+} from 'typeorm';
+import { BaseEntity } from './base.entity';
+import { Courses } from './courses.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
-@Entity()
-export class Students {
+@Entity('students')
+@Index(['firstName', 'lastName'], { unique: true })
+export class Students extends BaseEntity {
     @ApiProperty()
     @PrimaryGeneratedColumn()
     id: number;
@@ -22,6 +30,16 @@ export class Students {
 
     @ApiProperty()
     @ManyToMany(() => Courses)
-    @JoinTable({name: 'student_courses'})
+    @JoinTable({
+        name: 'student_courses',
+        joinColumn: {
+            name: 'studentId',
+            referencedColumnName: 'id'
+        },
+        inverseJoinColumn: {
+            name: 'courseId',
+            referencedColumnName: 'id'
+        }
+    })
     courses: Courses[];
 }
