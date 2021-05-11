@@ -8,7 +8,7 @@
       </div>
 
       <div v-else class="materialert error">
-        {{ this.responseMessage }}
+        {{ Array.isArray(this.responseMessage) ? this.responseMessage[0] : this.responseMessage }}
       </div>
     </div>
 
