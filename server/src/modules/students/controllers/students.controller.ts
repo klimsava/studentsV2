@@ -12,15 +12,16 @@ import {
     Header, ParseIntPipe, HttpStatus, HttpException
 } from '@nestjs/common';
 import { Response } from 'express';
-import { Students } from '../../database/entities/students.entity';
-import { CreateStudentsDto } from '../../dto/create-students.dto';
-import { UpdateStudentsDto } from '../../dto/update-students.dto';
-import { SelectCourse } from '../../dto/select-course.dto';
+import { Students } from '../entities/students.entity';
+import { CreateStudentsDto } from '../dto/create-students.dto';
+import { UpdateStudentsDto } from '../dto/update-students.dto';
+import { SelectCourse } from '../../courses/dto/select-course.dto';
 import { StudentsService } from '../services/students.service';
 import { ApiBody, ApiResponse, ApiTags, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
-import { NotFound } from '../../types/notFoundResponse';
-import { SuccessResponse } from '../../types/successResponse';
-import { BadRequest } from '../../types/badRequest';
+import { NotFound } from '../../types/not-found-response.type';
+import { SuccessResponseType } from '../../types/success-response.type';
+import { BadRequestType } from '../../types/bad-request.type';
+import { ERROR_MESSAGES } from '../../common/constants/common.constants';
 
 @ApiTags('students')
 @Controller('api/students')
@@ -31,28 +32,31 @@ export class StudentsController {
 
     @Get()
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: [Students],
         description: 'Show all students.',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({
+        type: NotFound,
+        description: ERROR_MESSAGES.NOT_FOUND,
+    })
     async list(@Res() response: Response): Promise<void> {
         const students = await this.studentsService.list();
 
         response
-            .status(200)
+            .status(HttpStatus.OK)
             .send(students.map(val => new Students(val)));
     }
 
     @Post()
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         type: Students,
         description: 'Created new student.',
     })
     @ApiBadRequestResponse({
-        type: BadRequest,
-        description: 'Bad Request',
+        type: BadRequestType,
+        description: ERROR_MESSAGES.BAD_REQUEST,
     })
     @Header('Cache-Control', 'none')
     async create(@Body() createStudentsDto: CreateStudentsDto, @Res() response: Response): Promise<void>
@@ -62,22 +66,33 @@ export class StudentsController {
         const user = await this.studentsService.findStudent(firstName, lastName);
 
         if (user.length) {
-            throw new HttpException('Entity already exists.', HttpStatus.CONFLICT);
+            throw new HttpException(ERROR_MESSAGES.CONFLICT, HttpStatus.CONFLICT);
         }
 
         await this.studentsService.create(createStudentsDto);
 
-        response.status(201).send({status: true, message: 'Added new student.'});
+        response
+            .status(HttpStatus.CREATED)
+            .send({
+                status: true,
+                message: 'Added new student.',
+            });
     }
 
     @Put(':id')
-    @ApiBody({type: UpdateStudentsDto})
+    @ApiBadRequestResponse({
+        type: UpdateStudentsDto,
+        description: ERROR_MESSAGES.BAD_REQUEST,
+    })
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: Students,
         description: 'Update student.',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({
+        type: NotFound,
+        description: ERROR_MESSAGES.NOT_FOUND,
+    })
     async update(
         @Param('id') id: number,
         @Body() updateStudentsDto: UpdateStudentsDto, @Res() response: Response): Promise<void> {
@@ -88,17 +103,33 @@ export class StudentsController {
             throw new NotFoundException();
         }
 
+        const { firstName, lastName } = updateStudentsDto;
+
+        const user = await this.studentsService.findStudent(firstName, lastName);
+
+        if (user.length) {
+            throw new HttpException(ERROR_MESSAGES.CONFLICT, HttpStatus.CONFLICT);
+        }
+
         await this.studentsService.update(Object.assign(student, updateStudentsDto));
 
-        response.status(200).send({status: true, message: 'Student updated successfully!'});
+        response
+            .status(HttpStatus.OK)
+            .send({
+                status: true,
+                message: 'Student updated successfully!',
+            });
     }
 
     @Delete(':id')
     @ApiResponse({
-        status: 204,
+        status: HttpStatus.NO_CONTENT,
         description: 'No Content',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({
+        type: NotFound,
+        description: ERROR_MESSAGES.NOT_FOUND,
+    })
     async delete(@Param('id', ParseIntPipe) id: number, @Res() response: Response): Promise<void> {
         const student = await this.studentsService.findOne(id);
 
@@ -108,15 +139,25 @@ export class StudentsController {
 
         await this.studentsService.delete(id);
 
-        response.status(204).send();
+        response
+            .status(HttpStatus.NO_CONTENT)
+            .send();
     }
 
     @Post('/chosen-course')
     @ApiBody({type: CreateStudentsDto})
-    @ApiResponse({status: 200, description: 'Select new course.', type: Students})
-    @ApiResponse({status: 404, description: 'Not Found Error.', type: NotFound})
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Select new course.',
+        type: Students,
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: ERROR_MESSAGES.NOT_FOUND,
+        type: NotFound,
+    })
     @Header('Cache-Control', 'none')
-    async selectCourse(@Body() selectCourse: SelectCourse): Promise<SuccessResponse> {
+    async selectCourse(@Body() selectCourse: SelectCourse): Promise<SuccessResponseType> {
         const allCourse = await this.studentsService.getAllCourseTimeStudent(selectCourse.studentId);
         const courseTime = await this.studentsService.getTimeCourse(selectCourse.courseId);
 

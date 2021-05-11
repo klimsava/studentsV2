@@ -1,9 +1,9 @@
-import { Students } from '../../database/entities/students.entity';
+import { Students } from '../entities/students.entity';
 import { getConnection, getManager, Repository, EntityRepository } from 'typeorm';
 import moment = require('moment');
 
 @EntityRepository(Students)
-export class CourseTimeRepository extends Repository<Students> {
+export class CourseTimeService extends Repository<Students> {
     async selectCourse(studentId: number, courseId: number): Promise<void> {
         await getConnection()
             .createQueryBuilder()

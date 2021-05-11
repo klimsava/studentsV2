@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, Length, IsString, IsNumber } from 'class-validator';
-import { IsUniqueValidators } from '../common/validators/is-unique.validators';
-import { Courses } from '../database/entities/courses.entity'
+import { IsNotEmpty, Length, IsString } from 'class-validator';
+import { IsUniqueValidators } from '../../common/constraint/is-unique-constraint';
+import { Courses } from '../entities/courses.entity'
 
 export class CreateCourseDto {
     @IsUniqueValidators(Courses, 'name')

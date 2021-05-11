@@ -5,8 +5,8 @@ import {
     ManyToMany,
     JoinTable, Index
 } from 'typeorm';
-import { BaseEntity } from './base.entity';
-import { Courses } from './courses.entity';
+import { BaseEntity } from '../../../entities/base.entity';
+import { Courses } from '../../courses/entities/courses.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('students')
@@ -29,7 +29,9 @@ export class Students extends BaseEntity {
     age: number;
 
     @ApiProperty()
-    @ManyToMany(() => Courses)
+    @ManyToMany(() => Courses, {
+        cascade: true,
+    })
     @JoinTable({
         name: 'student_courses',
         joinColumn: {

@@ -9,16 +9,17 @@ import {
     Body,
     NotFoundException,
     Header,
-    ParseIntPipe
+    ParseIntPipe, HttpStatus
 } from '@nestjs/common';
-import { Courses } from '../../database/entities/courses.entity';
+import { Courses } from '../entities/courses.entity';
 import { Response } from 'express';
-import { CreateCourseDto } from '../../dto/create-course.dto';
-import { UpdateCourseDto } from '../../dto/update-course.dto';
+import { CreateCourseDto } from '../dto/create-course.dto';
+import { UpdateCourseDto } from '../dto/update-course.dto';
 import { CoursesService } from '../services/courses.service';
-import { NotFound } from '../../types/notFoundResponse';
-import { BadRequest } from '../../types/badRequest';
-import { ApiBody, ApiResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
+import { NotFound } from '../../types/not-found-response.type';
+import { BadRequestType } from '../../types/bad-request.type';
+import { ApiResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
+import { ERROR_MESSAGES } from '../../common/constants/common.constants';
 
 @ApiTags('Courses')
 @Controller('api/courses')
@@ -27,45 +28,55 @@ export class CoursesController {
 
     @Get()
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: [Courses],
         description: 'Show all courses.',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({ type: NotFound, description: ERROR_MESSAGES.NOT_FOUND })
     async list(@Res() response: Response): Promise<void> {
         const courses = await this.coursesService.list();
 
         response
-            .status(200)
+            .status(HttpStatus.OK)
             .send(courses.map(val => new Courses(val)));
     }
 
     @Post()
-    @ApiBody({type: CreateCourseDto})
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         type: Courses,
         description: 'Created new course.',
     })
     @ApiBadRequestResponse({
-        type: BadRequest,
-        description: 'Bad Request',
+        type: BadRequestType,
+        description: ERROR_MESSAGES.BAD_REQUEST,
     })
     @Header('Cache-Control', 'none')
     async create(@Body() createCourseDto: CreateCourseDto, @Res() response: Response): Promise<void> {
         await this.coursesService.create(createCourseDto);
 
-        response.status(201).send({status: true, message: 'Added new course.'});
+        response
+            .status(HttpStatus.CREATED)
+            .send({
+                status: true,
+                message: 'Added new course.',
+            });
     }
 
     @Put(':id')
-    @ApiBody({type: UpdateCourseDto})
+    @ApiBadRequestResponse({
+        type: UpdateCourseDto,
+        description: ERROR_MESSAGES.BAD_REQUEST,
+    })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         type: Courses,
         description: 'Update course.',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({
+        type: NotFound,
+        description: ERROR_MESSAGES.NOT_FOUND,
+    })
     async update(
         @Param('id') id: number,
         @Body() updateCourseDto: UpdateCourseDto, @Res() response: Response): Promise<void> {
@@ -78,15 +89,23 @@ export class CoursesController {
 
         await this.coursesService.update(Object.assign(course, updateCourseDto));
 
-        response.status(201).send({status: true, message: 'Course updated successfully!'});
+        response
+            .status(HttpStatus.CREATED)
+            .send({
+                status: true,
+                message: 'Course updated successfully!',
+            });
     }
 
     @Delete(':id')
     @ApiResponse({
-        status: 204,
+        status: HttpStatus.NO_CONTENT,
         description: 'No Content',
     })
-    @ApiNotFoundResponse({ type: NotFound, description: 'Not Found' })
+    @ApiNotFoundResponse({
+        type: NotFound,
+        description: ERROR_MESSAGES.NOT_FOUND,
+    })
     async delete(@Param('id', ParseIntPipe) id: number, @Res() response: Response): Promise<void> {
         const course = await this.coursesService.findOne(id);
 
@@ -96,6 +115,8 @@ export class CoursesController {
 
         await this.coursesService.delete(id);
 
-        response.status(204).send();
+        response
+            .status(HttpStatus.NO_CONTENT)
+            .send();
     }
 }

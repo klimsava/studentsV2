@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateCourseDto } from '../../dto/create-course.dto';
-import { Courses } from '../../database/entities/courses.entity';
+import { CreateCourseDto } from '../dto/create-course.dto';
+import { Courses } from '../entities/courses.entity';
 import { CoursesService } from './courses.service';
 
 describe('CoursesService', () => {
@@ -33,15 +33,15 @@ describe('CoursesService', () => {
 
   describe('get all courses', () => {
     it('it should return course', async () => {
-      const сourses: Courses = {
+      const courses: Courses = {
         id: 1,
         name: 'test-course',
         description: 'Training in the programming language PHP',
         time: '11:00',
       };
 
-      jest.spyOn(repository, 'find').mockResolvedValueOnce([сourses]);
-      expect(await service.list()).toEqual([сourses]);
+      jest.spyOn(repository, 'find').mockResolvedValueOnce([courses]);
+      expect(await service.list()).toEqual([courses]);
     });
   });
 

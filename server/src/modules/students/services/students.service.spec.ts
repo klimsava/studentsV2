@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateStudentsDto } from '../../dto/create-students.dto';
-import { Students } from '../../database/entities/students.entity';
-import { Courses } from '../../database/entities/courses.entity';
+import { CreateStudentsDto } from '../dto/create-students.dto';
+import { Students } from '../entities/students.entity';
+import { Courses } from '../../courses/entities/courses.entity';
 import { StudentsService } from './students.service';
 
 describe('StudentsService', () => {
@@ -72,4 +72,3 @@ describe('StudentsService', () => {
     });
   });
 });
-

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, getCustomRepository } from 'typeorm';
-import { Students } from '../../database/entities/students.entity';
-import { CreateStudentsDto } from '../../dto/create-students.dto';
-import { CourseTimeRepository } from '../studentsRepository/courseTime.repository';
+import { Students } from '../entities/students.entity';
+import { CreateStudentsDto } from '../dto/create-students.dto';
+import { CourseTimeService } from './course-time.service';
 
 @Injectable()
 export class StudentsService {
     constructor(
         @InjectRepository(Students)
         private studentsRepository: Repository<Students>,
-        private readonly courseTimeRepository: CourseTimeRepository,
+        private readonly courseTimeService: CourseTimeService,
     ) {}
 
     list(): Promise<Students[]> {
@@ -45,20 +45,20 @@ export class StudentsService {
     }
 
     async select(studentId: number, courseId: number): Promise<void> {
-        const courseTimeRepository = getCustomRepository(CourseTimeRepository);
+        const courseTimeService = getCustomRepository(CourseTimeService);
 
-        return courseTimeRepository.selectCourse(studentId, courseId);
+        return courseTimeService.selectCourse(studentId, courseId);
     }
 
     async getAllCourseTimeStudent(studentId: number): Promise<any[]> {
-        return this.courseTimeRepository.allCourseTimeStudent(studentId);
+        return this.courseTimeService.allCourseTimeStudent(studentId);
     }
 
     async getTimeCourse(courseId: number): Promise<any> {
-        return this.courseTimeRepository.timeCourse(courseId);
+        return this.courseTimeService.timeCourse(courseId);
     }
 
     async check(allCourses: any, timeOfSelectedCourse: string): Promise<any> {
-        return this.courseTimeRepository.checkExistCourse(allCourses, timeOfSelectedCourse);
+        return this.courseTimeService.checkExistCourse(allCourses, timeOfSelectedCourse);
     }
 };

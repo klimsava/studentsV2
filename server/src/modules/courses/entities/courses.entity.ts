@@ -3,7 +3,7 @@ import {
     Column,
     PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import { BaseEntity } from '../../../entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('courses')

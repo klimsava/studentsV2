@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult } from 'typeorm';
-import { Courses } from '../../database/entities/courses.entity';
-import { CreateCourseDto } from '../../dto/create-course.dto';
+import { Courses } from '../entities/courses.entity';
+import { CreateCourseDto } from '../dto/create-course.dto';
 
 @Injectable()
 export class CoursesService {
@@ -17,6 +17,14 @@ export class CoursesService {
 
     findOne(id: number): Promise<Courses> {
         return this.coursesRepository.findOne(id);
+    }
+
+    findCourse(name: string): Promise<Courses[]> {
+        return this.coursesRepository.find({
+            where: {
+                name
+            },
+        });
     }
 
     create(createCourseDto: CreateCourseDto): Promise<Courses> {
