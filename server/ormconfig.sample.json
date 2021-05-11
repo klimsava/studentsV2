@@ -1,0 +1,17 @@
+{
+  "type": "mysql",
+  "host": "",
+  "port": "",
+  "username": "",
+  "password": "",
+  "database": "",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "dropSchema": false,
+  "synchronize": false,
+  "migrationsRun": false,
+  "logging": true,
+  "migrations": ["dist/database/migrations/*{.ts,.js}"],
+  "cli": {
+    "migrationsDir": "src/database/migrations"
+  }
+}
